@@ -7,7 +7,7 @@ logging.basicConfig(
     handlers=[
         logging.FileHandler("tool.log"), # This is to save logs in files
         logging.StreamHandler()          # This prints to the console
-    ]
+    ]   
 )
 
 
