@@ -1,4 +1,4 @@
-# pysec
+# PySec
 
 A concise toolkit of practical Python utilities for cybersecurity tasks. Each tool is CLI-driven, testable, and designed for realistic lab use. Use responsibly and only on assets you own or are authorized to test.
 
