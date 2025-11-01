@@ -4,15 +4,15 @@ import json
 import time
 import os
 from pathlib import Path
-
-from tools import cli
+import ipaddress
+from tools.scanner import cli
 from tools.scanner.workers import connect_target
 
 root = logging.getLogger()
 root.setLevel(logging.DEBUG)
 root.handlers.clear()
 
-fh = logging.FileHandler("scanner.log", encoding="utf-8")
+fh = logging.FileHandler(Path("logs/scanner.log"), encoding="utf-8")
 fh.setLevel(logging.DEBUG)
 fh.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
 root.addHandler(fh)
@@ -23,6 +23,68 @@ ch.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
 root.addHandler(ch)
 
 logger = logging.getLogger(__name__)
+
+def parse_and_normalize(args):
+    """
+    Returns (ports, targets).
+    Assumptions for this prototype:
+      - targets-file contains one IP/hostname per non-empty line
+      - ports is comma-separated integers only (no ranges)
+    """
+    ports = []
+    targets = []
+
+    
+    if getattr(args, "target", None):
+        targets.append(args.target.strip())
+    else:
+        path = getattr(args, "targets_file", None)
+        if not path or not os.path.exists(path):
+            logger.error("Targets file not found: %s", path)
+            raise SystemExit(2)
+        with open(path, "r", encoding="utf-8") as fh:
+            for lineno, line in enumerate(fh, start=1):
+                ip = line.strip()
+                if not ip:
+                    continue
+                
+                try:
+                    # if it's IPv4/IPv6 this will validate; hostnames will raise ValueError and we'll accept them
+                    ipaddress.ip_address(ip)
+                    targets.append(ip)
+                except ValueError:
+                    # treat as hostname
+                    if " " in ip:
+                        logger.error("Invalid target at line %d: %r", lineno, ip)
+                        sys.exit(2)
+                    targets.append(ip)
+
+
+    ports_arg = getattr(args, "ports", None)
+    if ports_arg:
+        for token in ports_arg.split(","):
+            token = token.strip()
+            if not token:
+                continue
+            try:
+                p = int(token)
+            except ValueError:
+                logger.warning("Skipping non-integer port token: %r", token)
+                continue
+            if 1 <= p <= 65535:
+                ports.append(p)
+            else:
+                logger.warning("Skipping out-of-range port: %d", p)
+    else:
+
+        ports = list(range(1, 1025))
+
+    ports = sorted(set(ports))
+    if not targets:
+        logger.error("No targets after parsing")
+        sys.exit(2)
+    return ports, targets
+
 
 def print_table(results):
 
@@ -57,7 +119,7 @@ def choose_worker_count(args, targets, ports):
 
 def main():
     args = cli.get_args()
-    ports, targets = cli.parse_and_normalize(args)
+    ports, targets = parse_and_normalize(args)
 
     workers = choose_worker_count(args, targets, ports)
     logger.info("Starting scan: %d target(s) x %d port(s) = %d tasks (workers=%d, timeout=%.2fs)",
