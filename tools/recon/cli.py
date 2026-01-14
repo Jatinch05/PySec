@@ -8,7 +8,12 @@ def build_arg_parser():
     g.add_argument("--domain","-d", action="append", help="Target domain (repeatable). Example: -d example.com -d test.com")
     g.add_argument("--domains-file", "-D", type=Path,
                    help="File with one domain per line")
-    default_threads = min(256, os.cpu_count() * 10)
+    # default_threads = min(256, os.cpu_count() * 10)
+    no_of_cpus = os.cpu_count()
+    if no_of_cpus:
+        default_threads = min(256, no_of_cpus * 10)
+    else:
+        default_threads = 256
     p.add_argument("--wordlist", "-w", type=Path, default=Path("data/wordlists/subdomains-top1million-5000.txt"))
     p.add_argument("--max-wordlist", type=int, default=1000)
     p.add_argument("--threads", "-t", type=int, default=default_threads)

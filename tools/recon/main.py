@@ -71,7 +71,7 @@ def _get_domains(args):
 
 def _load_wordlist(args):
     wordlist = []
-    path: Path = getattr(args, "wordlist", None)
+    path: Path | None = getattr(args, "wordlist", None)
     limit = getattr(args, "max_wordlist", 1000)
 
     if path and path.exists():
@@ -137,11 +137,11 @@ def main():
 
     logger.info(f"Starting recon: {total_tasks} target(s) (workers={workers}, wordlist_size={len(wordlist)})")
 
-    start = time.perf_counter()
+    start = time.perf_counter() # type: ignore
 
     results = run_recon_tasks(domains, wordlist, workers=workers, args=args)
 
-    elapsed = time.perf_counter() - start
+    elapsed = time.perf_counter() - start # type: ignore
     logger.info("Recon complete: %d targets scanned in %.2fs", len(results), elapsed)
 
     out_path = Path(args.output)

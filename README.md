@@ -14,7 +14,7 @@ A concise toolkit of practical Python utilities for cybersecurity tasks. Each to
 
 ## Core technologies used
 
-`socket`, `ipaddress`, `threading`, `asyncio` (optional), `requests`, `BeautifulSoup`, `dnspython`, `scapy`, `pefile`, `yara-python`, `sqlite3`, `pandas`, `argparse`, `logging`.
+`socket`, `ipaddress`, `threading`, `asyncio` (optional), `requests`, `dnspython`, `scapy`, `pefile`, `yara-python`, `sqlite3`, `pandas`, `argparse`, `logging`.
 
 ## Quick start
 

@@ -15,10 +15,10 @@ def _whois_target(q: MPQueue, d: str) -> None:
     """Top-level worker used by Process to perform whois and send result via queue."""
     try:
         res = whois.whois(d)
-        if hasattr(res, "dict"):
-            q.put(dict(res.dict()))
-        elif isinstance(res, dict):
+        if isinstance(res, dict):
             q.put(dict(res))
+        elif hasattr(res, "dict") and callable(res.dict):
+            q.put(dict(res.dict()))
         else:
             q.put(dict(getattr(res, "__dict__", {}) or {}))
     except Exception:
